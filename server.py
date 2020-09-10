@@ -1,18 +1,25 @@
 from aiohttp import web
 import aiofiles
 import asyncio
-import datetime
 
 
 async def archivate(request):
+    name = request.match_info.get('archive_hash')
     response = web.StreamResponse()
-    response.headers['Content-Type'] = 'text/html'
+    response.headers['Content-Type'] = 'multipart/form-data'
+    response.headers['Content-Disposition'] = f'attachment;filename={name}.zip'
+
+    process = await asyncio.create_subprocess_shell(
+        f'zip -j -r - test_photos/{name}/',
+        stdout=asyncio.subprocess.PIPE
+    )
     await response.prepare(request)
     while True:
-        formatted_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        message = f'{formatted_date}<br>'
-        await response.write(message.encode('utf-8'))
-        await asyncio.sleep(1)
+        content = await process.stdout.read(10000)
+        if not content:
+            break
+        await response.write(content)
+    return response
 
 
 async def handle_index_page(request):
