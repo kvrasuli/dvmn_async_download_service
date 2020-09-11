@@ -2,6 +2,10 @@ from aiohttp import web
 import aiofiles
 import asyncio
 import os
+import logging
+
+
+logger = logging.getLogger(__file__)
 
 
 async def archivate(request):
@@ -19,9 +23,10 @@ async def archivate(request):
     )
     await response.prepare(request)
     while True:
-        content = await process.stdout.read(10000)
+        content = await process.stdout.read(50000)
         if not content:
             break
+        logger.info('Sending archive chunk ...')
         await response.write(content)
     return response
 
@@ -33,6 +38,7 @@ async def handle_index_page(request):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     app = web.Application()
     app.add_routes([
         web.get('/', handle_index_page),
