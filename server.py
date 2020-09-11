@@ -1,6 +1,7 @@
 from aiohttp import web
 import aiofiles
 import asyncio
+import os
 
 
 async def archivate(request):
@@ -8,6 +9,9 @@ async def archivate(request):
     response = web.StreamResponse()
     response.headers['Content-Type'] = 'multipart/form-data'
     response.headers['Content-Disposition'] = f'attachment;filename={name}.zip'
+
+    if not os.path.exists(f'test_photos/{name}/'):
+        raise web.HTTPNotFound(text='Archive doesn\'t exist or was deleted.')
 
     process = await asyncio.create_subprocess_shell(
         f'zip -j -r - test_photos/{name}/',
