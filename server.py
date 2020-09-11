@@ -22,13 +22,19 @@ async def archivate(request):
         stdout=asyncio.subprocess.PIPE
     )
     await response.prepare(request)
-    while True:
-        content = await process.stdout.read(50000)
-        if not content:
-            break
-        logger.info('Sending archive chunk ...')
-        await response.write(content)
-    return response
+    try:
+        while True:
+            content = await process.stdout.read(500000)
+            if not content:
+                break
+            logger.info('Sending archive chunk ...')
+            await response.write(content)
+            await asyncio.sleep(1)
+    except asyncio.CancelledError:
+        logger.debug('Download was interrupted!')
+        raise
+    finally:
+        return response
 
 
 async def handle_index_page(request):
@@ -38,7 +44,7 @@ async def handle_index_page(request):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     app = web.Application()
     app.add_routes([
         web.get('/', handle_index_page),
