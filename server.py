@@ -9,32 +9,32 @@ logger = logging.getLogger(__file__)
 
 
 async def archivate(request):
-    name = request.match_info.get('archive_hash')
+    archive_hash = request.match_info.get('archive_hash')
     response = web.StreamResponse()
     response.headers['Content-Type'] = 'multipart/form-data'
-    response.headers['Content-Disposition'] = f'attachment;filename={name}.zip'
+    response.headers['Content-Disposition'] = f'attachment;filename={archive_hash}.zip'
 
-    if not os.path.exists(f'test_photos/{name}/'):
+    if not os.path.exists(f'test_photos/{archive_hash}/'):
         raise web.HTTPNotFound(text='Archive doesn\'t exist or was deleted.')
 
-    process = await asyncio.create_subprocess_exec(
-        'zip', '-j', '-r', '-', f'test_photos/{name}/',
+    archiving_process = await asyncio.create_subprocess_exec(
+        'zip', '-j', '-r', '-', f'test_photos/{archive_hash}/',
         stdout=asyncio.subprocess.PIPE
     )
     await response.prepare(request)
     try:
         while True:
-            content = await process.stdout.read(500000)
-            if not content:
+            archive_chunk = await archiving_process.stdout.read(500000)
+            if not archive_chunk:
                 break
             logger.info('Sending archive chunk ...')
-            await response.write(content)
+            await response.write(archive_chunk)
             await asyncio.sleep(1)
     except asyncio.CancelledError:
         logger.debug('Download was interrupted!')
         raise
     finally:
-        process.kill()
+        archiving_process.kill()
         return response
 
 
