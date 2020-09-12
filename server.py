@@ -35,6 +35,7 @@ async def archivate(request):
         raise
     finally:
         archiving_process.kill()
+        await archiving_process.communicate()
         return response
 
 
