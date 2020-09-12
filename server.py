@@ -34,6 +34,7 @@ async def archivate(request):
         logger.debug('Download was interrupted!')
         raise
     finally:
+        process.kill()
         return response
 
 
