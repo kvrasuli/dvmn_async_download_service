@@ -37,8 +37,9 @@ async def archivate(request):
         logger.debug('Download was interrupted!')
         raise
     finally:
-        archiving_process.kill()
-        await archiving_process.communicate()
+        if archiving_process.returncode is None:
+            archiving_process.kill()
+            await archiving_process.communicate()
         return response
 
 
