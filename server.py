@@ -6,6 +6,7 @@ import logging
 import argparse
 
 
+CHUNK_SIZE = 1000
 logger = logging.getLogger(__file__)
 
 
@@ -26,7 +27,7 @@ async def archivate(request):
     await response.prepare(request)
     try:
         while True:
-            archive_chunk = await archiving_process.stdout.read(500000)
+            archive_chunk = await archiving_process.stdout.read(CHUNK_SIZE)
             if not archive_chunk:
                 break
             logger.info('Sending archive chunk ...')
