@@ -19,10 +19,11 @@ async def archivate(request):
     path = os.path.join(app.path, archive_hash)
     if not os.path.exists(path):
         raise web.HTTPNotFound(text='Archive doesn\'t exist or was deleted.')
-
+    cwd = os.path.join(os.getcwd(), path)
     archiving_process = await asyncio.create_subprocess_exec(
-        'zip', '-j', '-r', '-', path,
-        stdout=asyncio.subprocess.PIPE
+        'zip', '-r', '-', '.',
+        stdout=asyncio.subprocess.PIPE,
+        cwd=cwd
     )
     await response.prepare(request)
     try:
