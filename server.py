@@ -11,7 +11,7 @@ logger = logging.getLogger(__file__)
 
 
 async def archivate(request):
-    archive_hash = request.match_info.get('archive_hash')
+    archive_hash = request.match_info['archive_hash']
     response = web.StreamResponse()
     response.headers['Content-Type'] = 'multipart/form-data'
     response.headers['Content-Disposition'] = f'attachment;filename={archive_hash}.zip'
